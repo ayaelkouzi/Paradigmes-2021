@@ -1,0 +1,133 @@
+from tkinter import *
+
+
+class JeuDeVie(Frame):
+
+    def __init__(self,parent):
+
+        Frame.__init__(self,parent)
+        self.parent=parent
+        self.grid(row=0,column=0)
+        self.size_x=30
+        self.size_y=18
+        self.cellule=[]
+        self.suite=True
+        self.creerUI()
+
+    
+    def creerUI(self):
+        
+        self.parent.title("Jeu De Vie")
+        self.frame_titre=Frame(self.parent)
+        self.frame_titre.grid(row =0,column=0,columnspan=4)
+        title=Label(self.frame_titre,text="Choisir Les Cellules Puis Clicker Sur Démarrer")
+        title.pack(side=TOP)
+
+        #creation d'un grid de bouttons pour le depart
+        self.creer_grid()
+
+        #un boutton pour debuter le jeu
+        self.boutton_de_demart=Button(self.parent,text="Démarrer",command=self.stimuler)
+
+        # sticky=E est utilse pour coller le boutton dans l'est
+        self.boutton_de_demart.grid(row=1,column=1,sticky=E)
+
+        # un boutton pour réinitialiser 
+        self.boutton_de_reset=Button(self.parent,text="Réinitialiser",state=DISABLED,command=self.reset)
+        self.boutton_de_reset.grid(row=1,column=2,sticky=W)
+
+    def creer_grid(self):
+
+        self.frame_game=Frame( self.parent,width=self.size_x+2,height=self.size_y+2,borderwidth = 1, relief = SUNKEN)
+        self.frame_game.grid(row=2,column=0,columnspan=4)
+        self.cellule=[[Button(self.frame_game,bg="white",width=2,height=1) for i in range(self.size_x+2)] for j in range(self.size_y+2)]
+        for i in range(1,self.size_y+1):
+            for j in range(1,self.size_x+1):
+                self.cellule[i][j].grid(row=i,column=j,sticky=W+E)
+                self.cellule[i][j]['command']=lambda i=i,j=j:self.changer(self.cellule[i][j])
+
+    
+    def stimuler(self):
+
+        self.desactiver()
+        cellule_a_changer=[]
+        for i in range(1,self.size_y+1):
+            for j in range(1,self.size_x+1):
+                coord=(i,j)
+
+                # si la cellule est morte et possede 3 voisines , mettre le coordonnee dans la liste de cellule a changer
+                if self.cellule[i][j]['bg']=="white" and self.voisine(i,j)==3:
+                    cellule_a_changer.append(coord)
+                # si la cellule est vivante et ne possede pas 2 ou 3 voisines , mettre le coordonnee dans la liste de cellule a changer
+                elif self.cellule[i][j]['bg']=="black" and self.voisine(i,j)!=3 and self.voisine(i,j)!=2 :
+                    cellule_a_changer.append(coord)
+
+        for coord in cellule_a_changer:
+            self.changer(self.cellule[coord[0]][coord[1]])
+        if self.suite:
+            self.after(90,self.stimuler)
+        else :
+            self.activer()
+
+              
+    def desactiver(self):
+
+
+        if self.cellule[1][1]!=DISABLED:
+            for i in range(0,self.size_y+2):
+                for j in range(0,self.size_x+2):
+                    self.cellule[i][j].configure(state=DISABLED)
+
+            self.boutton_de_reset.configure(state=NORMAL)
+            self.boutton_de_demart.configure(state=DISABLED)
+        
+
+
+    def activer(self):
+
+        for i in range(0,self.size_y+2):
+            for j in range(0,self.size_x+2):
+                self.cellule[i][j]['bg']="white"
+                self.cellule[i][j].configure(state=NORMAL)
+
+        self.boutton_de_reset.configure(state=DISABLED)
+        self.boutton_de_demart.configure(state=NORMAL)
+        self.suite=True
+
+
+    def voisine(self,x_coord,y_coord):
+        compteur=0
+        for i in range(x_coord-1,x_coord+2):
+            for j in range(y_coord-1,y_coord+2):
+                if(i!=x_coord or j!=y_coord) and self.cellule[i][j]['bg']=="black":
+                    compteur+=1
+        return compteur
+
+
+    def changer(self,c):
+        if c['bg']=="white":
+            c['bg']="black"
+        else:
+            c['bg']="white"
+
+
+    def reset(self):
+        self.suite=False
+
+if __name__=='__main__':
+    root=Tk()
+    jeu=JeuDeVie(root)
+    root.mainloop()
+
+
+            
+
+
+
+
+
+
+
+
+
+
